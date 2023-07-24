@@ -1,0 +1,102 @@
+.custom-icon {
+    filter: drop-shadow(1px 7px 5px rgba(0, 0, 0, 0.87))
+}
+
+.leaflet-top {
+    margin-top: 100px;
+}
+
+.leaflet-control-measure {
+    height: auto;
+    width: auto;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.85rem;
+    border-radius: 3px;
+    border: none;
+}
+
+.leaflet-control-measure-toggle {
+    background: url("https://unpkg.com/leaflet-measure/assets/rulers.png");
+}
+
+.js-start.start,
+.js-cancel.cancel,
+.js-finish.finish {
+    min-width: 185px;
+    text-align: left;
+    padding-left: 30px;
+    padding-bottom: 2px;
+    color: #0e3d79;
+}
+
+.js-start.start{
+    background: url("https://unpkg.com/leaflet-measure/assets/start.svg");
+    background-repeat: no-repeat;
+    background-position: left;
+}
+
+.js-startprompt.startprompt {
+    padding: 10px;
+    background-color: #FFFFFF;
+    border-radius: 3px;
+}
+
+.js-startprompt h3 {
+    border-bottom: 1px solid rgb(200, 200, 200);
+    font-weight: 600;
+    margin: 0 0 10px 0;
+    padding-bottom: 10px;
+}
+
+.js-starthelp {
+    max-width: 200px;
+    border-bottom: 1px solid rgb(200, 200, 200);
+    padding-bottom: 10px;
+}
+
+.js-measuringprompt {
+    padding: 10px;
+    background-color: #FFFFFF;            
+    border-radius: 3px;
+}
+
+.js-measuringprompt h3{
+    font-weight: 600;
+    margin: 0 0 10px 0;
+    padding-bottom: 5px;
+}
+
+.js-cancel.cancel {
+    background: url("https://unpkg.com/leaflet-measure/assets/cancel.svg");
+    background-repeat: no-repeat;
+    background-position: left;
+}
+
+.js-finish.finish {
+    background: url("https://unpkg.com/leaflet-measure/assets/check.svg");            
+    background-repeat: no-repeat;
+    background-position: left;
+}
+
+.js-measuretasks {
+    margin-top: 10px;
+}
+
+.group {
+    border-top: solid rgb(200, 200, 200) 1px;
+    padding: 10px 0 10px 0;
+}
+
+.group p {
+    margin: 5px 0 5px 0;
+}
+
+.heading {
+    color: rgb(136, 136, 136);
+    font-weight: 600;
+    margin-right: 5px;
+}
+
+.search-tip {
+    max-width: calc(100vw - 30px)
+}
