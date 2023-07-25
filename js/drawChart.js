@@ -1,20 +1,26 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
 export default function drawChart(allDates, allDepthVals, simplifiedData, element, alt_urls) {
+    // Remove any HTML in container for clean slate
     document.getElementById('container').innerHTML = '';
 
+    // Define graph parameters
     const width = document.getElementById("info").clientWidth - 50;
     const height = document.getElementById("info").clientHeight - 85;
     const margin = {top: 20, right: 200, bottom: 60, left: 60};
     const colors = ["#e60049", "#0bb4ff", "#50e991", "#e6d800", "#9b19f5", "#ffa300", "#dc0ab4", "#b3d4ff", "#00bfa0", "#000000", "#8a8a8a"];
 
+    // Create date scale for x axis based on all available dates for all wells at location
     const x = d3.scaleUtc()
         .domain(d3.extent(allDates))
         .range([margin.left, width - margin.right])
         .nice();
     
+    // Create depth to ground water scale for left y axis
     let yl = null;
+    // If range in values is less than 100, the axis will span 100 feet to maintain similar scale between graphs
     if (d3.extent(allDepthVals)[1] - d3.extent(allDepthVals)[0] <= 100) {
+        // If axis would extend into the negatives, set the minimum to 0; you cannot have negative depth to groundwater
         if (Math.floor((((d3.extent(allDepthVals)[1] + d3.extent(allDepthVals)[0])/2) - 50) / 10) * 10 < 0) {
             yl = d3.scaleLinear()
                 .domain([0, 100])
@@ -33,14 +39,17 @@ export default function drawChart(allDates, allDepthVals, simplifiedData, elemen
             .nice();
     }
 
+    // Create height above NAVD88 scale based on left scale values
     const yr = d3.scaleLinear()
         .domain([simplifiedData[0].land_surface_alt - yl.domain()[1], simplifiedData[0].land_surface_alt - yl.domain()[0]])
         .range([height - margin.bottom, margin.top])
     
+    // Create initial SVG
     const svg = d3.create("svg")
         .attr("width", width)
         .attr("height", height);
 
+    // Create x-axis grid
     let xAxisGrid = null;
     if (document.getElementById("info").clientWidth > 520) {
         xAxisGrid = d3.axisTop(x).tickSize(-(height - margin.top - margin.bottom)).tickFormat('')
@@ -53,6 +62,7 @@ export default function drawChart(allDates, allDepthVals, simplifiedData, elemen
         .attr("transform", `translate(0, ${margin.top})`)
         .call(xAxisGrid)
 
+    // Create y-axis grid based on left axis
     let yAxisGrid = null;
     if (document.getElementById("info").clientHeight > 340) {
         yAxisGrid = d3.axisLeft(yl).tickSize(-(width - margin.left - margin.right)).tickFormat('')
@@ -65,6 +75,7 @@ export default function drawChart(allDates, allDepthVals, simplifiedData, elemen
         .attr("transform", `translate(${margin.left}, 0)`)
         .call(yAxisGrid)
 
+    // Create x-axis labels
     let xAxis = null;
     if (document.getElementById("info").clientWidth > 520) {
         xAxis = svg.append("g")
@@ -88,6 +99,7 @@ export default function drawChart(allDates, allDepthVals, simplifiedData, elemen
             .attr("transform", "rotate(-45)");
     }
 
+    // Create left y-axis labels
     let yAxisLeft = null;
     if (document.getElementById("info").clientHeight > 340) {
         yAxisLeft = svg.append("g")
@@ -103,6 +115,7 @@ export default function drawChart(allDates, allDepthVals, simplifiedData, elemen
             .attr("font-size", "1rem");
     }
 
+    // Create right y-axis labels; some complicated math is involved to make sure the scale displays properly
     let rightAxisVals = []
     for (let i = 0; i < 11; i++) {
         rightAxisVals.push(yr.domain()[0] + 10 * i)
@@ -139,6 +152,7 @@ export default function drawChart(allDates, allDepthVals, simplifiedData, elemen
         }
     }
 
+    // Create hover tooltip to display precise data at each point on graph
     var tooltip = d3.select("#container").append("div")
         .attr("class", "tooltip")
         .style("z-index", 1000)

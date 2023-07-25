@@ -95,6 +95,7 @@
             "Streets": Esri_WorldStreetMap
         };
         
+        // Create control for layers
         map.addControl(new L.Control.Search({
             layer: markers,
             autoResize: false,
@@ -165,9 +166,11 @@
         
         const stackedWells = [];
 
+        // For each well in file, do tasks...
         fetchJSON('./data/wells.geojson')
             .then(function(res) {
                 res.features.forEach(element => {
+                    // Add well data to array, grouping by location
                     if (stackedWells.length == 0) {
                         stackedWells.push({
                             lat: element.properties.lat,
@@ -198,6 +201,7 @@
                     };
                 });
 
+                // Create map markers for each well location that create graph on click
                 stackedWells.forEach(element => {
                     let wellMarker = L.marker([element.lat, element.lon], {
                         title: (element.wells.map(e => e.SWN)).join(', '),
@@ -205,12 +209,15 @@
                     });
 
                     wellMarker.on('click', async function(e) {
+                        // Set popup location and basic info
                         const popLocation = e.latlng;
                         const popup = L.popup().setLatLng(popLocation).setContent(`${wellMarker._icon.title}`).openOn(map);
-                    
+
+                        // Create array of urls for data retrieval and comparison
                         const urls = element.wells.map(well => `https://labs.waterdata.usgs.gov/api/observations/data?featureId=USGS-${well.Site_Number}&type=discrete&domain=groundwater_levels&f=json`);
                         const alt_urls = element.wells.map(well => `https://nwis.waterdata.usgs.gov/usa/nwis/gwlevels/?site_no=${well.Site_Number}`);
                         
+                        // Set initial info window information
                         if(window.innerWidth > 550) {
                             document.getElementById('info').style.left = 'calc(0% + 70px)';
                         }
@@ -218,6 +225,7 @@
                         document.getElementById('info-loader').style.display = 'block';
                         document.getElementById('container').innerHTML = '';
 
+                        // Get data for all wells at location from USGS
                         const data = []
                         for (let i = 0; i < urls.length; i++) {
                             await d3.json(urls[i]).then(function(d){
@@ -225,6 +233,7 @@
                             }).catch(err => console.log(err));
                         };
 
+                        // Display error if no data from USGS
                         if(data.length == 0) {
                             document.getElementById('info-loader').style.display = 'none';
                             document.getElementById('well-id').innerHTML = '404 data not found error.';
@@ -235,6 +244,7 @@
                         const allDepthVals = [];
                         const allElevVals = [];
                         for (let i = 0; i < data.length; i++) {
+                            // Create base object for reduced data for each well
                             simplifiedData.push({
                                 site_name: data[i].properties.monitoringLocationName,  
                                 land_surface_alt: parseFloat(data[i].properties.monitoringLocationAltitudeLandSurface),
@@ -247,15 +257,20 @@
 
                             for (let j = 0; j < data[i].properties.dataStreams[1].observations.length; j++) {
                                 if (data[i].properties.dataStreams[2].observations[j].result) {
+                                    // Add NAVD88 level data
                                     simplifiedData[i].data.gwLvl_NAVD1988.push({
                                         date: new Date(data[i].properties.dataStreams[1].observations[j].phenomenonTime),
                                         value: parseFloat(data[i].properties.dataStreams[1].observations[j].result)
                                     });
+                                    // Add depth to groundwater data
                                     simplifiedData[i].data.depth_to_gw.push({
                                         date: new Date(data[i].properties.dataStreams[2].observations[j].phenomenonTime),
                                         value: parseFloat(data[i].properties.dataStreams[2].observations[j].result),
+                                        // Calculate height above NAVD88 based on depth to groundwater and well height
                                         calc_above_navd: simplifiedData[i].land_surface_alt - parseFloat(data[i].properties.dataStreams[2].observations[j].result)
                                     });
+
+                                    // Add data to arrays for use in creating graph axes
                                     allDates.push(new Date(data[i].properties.dataStreams[2].observations[j].phenomenonTime));
                                     allDepthVals.push(parseFloat(data[i].properties.dataStreams[2].observations[j].result));
                                     allElevVals.push(simplifiedData[i].land_surface_alt - parseFloat(data[i].properties.dataStreams[2].observations[j].result))
@@ -263,6 +278,7 @@
 
                             }
 
+                            // Sort data by date for better graphing
                             simplifiedData[i].data.gwLvl_NAVD1988.sort(function(a, b) {
                                 return b.date - a.date;
                             });
@@ -271,6 +287,8 @@
                             });
                         };
 
+                        // Draw chart - separate JS file
+                        // Chart will redraw when window is resized
                         drawChart(allDates, allDepthVals, simplifiedData, element, alt_urls);
                         window.addEventListener('resize', function() {
                             drawChart(allDates, allDepthVals, simplifiedData, element, alt_urls);
@@ -280,8 +298,6 @@
                 markers.addLayer(wellMarker)
                 });
             }).catch(err => console.error(err));
-
-
     </script>
 </body>
 </html>
